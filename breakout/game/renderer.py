@@ -1,10 +1,11 @@
 """
-renderer: all pygame drawing lives here,
-kept separate from game logic.
+renderer: all pygame drawing lives here.
 
 Task 3:
-Different brick types are rendered using
-different colors.
+- Different brick types have different appearances.
+
+Task 4:
+- Score and combo are displayed by GameEngine.draw().
 """
 
 import pygame
@@ -18,7 +19,7 @@ COLOR_PADDLE = (80, 180, 255)
 COLOR_BALL = (240, 240, 240)
 COLOR_TEXT = (255, 255, 255)
 
-# Task 3: Brick colors
+# Task 3: brick colors
 COLOR_NORMAL_BRICK = (80, 180, 255)
 COLOR_STRONG_BRICK = (255, 165, 0)
 COLOR_UNBREAKABLE_BRICK = (150, 150, 150)
@@ -41,7 +42,6 @@ def draw_brick(surface, brick):
         color = COLOR_UNBREAKABLE_BRICK
 
     else:
-        # Fallback color for unexpected brick types
         color = COLOR_NORMAL_BRICK
 
     rect = brick.get_rect()

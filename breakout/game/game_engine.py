@@ -2,16 +2,16 @@
 GameEngine: owns the paddle, ball, and bricks.
 
 Task 1:
-- Fix brick destruction so bricks are removed when their
-  hit count reaches zero.
+- Fix brick destruction.
 
 Task 2:
-- Add 3 lives.
-- Add game-over state.
-- Add restart functionality using the R key.
+- Add lives, game over, and restart.
 
 Task 3:
-- Add NORMAL, STRONG, and UNBREAKABLE brick types.
+- Add normal, strong, and unbreakable bricks.
+
+Task 4:
+- Add score and combo multiplier.
 """
 
 import pygame
@@ -29,6 +29,9 @@ BRICK_HEIGHT = 22
 BRICK_GAP = 6
 BRICK_TOP_MARGIN = 50
 
+# Task 4
+POINTS_PER_BRICK = 10
+
 
 class GameEngine:
     def __init__(self):
@@ -44,9 +47,13 @@ class GameEngine:
 
         self.bricks = self._build_bricks()
 
-        # Task 2: lives and game-over state
+        # Task 2
         self.lives = 3
         self.game_over = False
+
+        # Task 4
+        self.score = 0
+        self.combo = 1
 
     def _build_bricks(self):
         bricks = []
@@ -69,11 +76,7 @@ class GameEngine:
                     BRICK_HEIGHT + BRICK_GAP
                 )
 
-                # Task 3:
-                # First row    -> Unbreakable
-                # Second row  -> Strong
-                # Remaining   -> Normal
-
+                # Task 3
                 if row == 0:
                     brick_type = Brick.UNBREAKABLE
 
@@ -103,14 +106,7 @@ class GameEngine:
 
     def _restart_game(self):
         """
-        Completely restart the game.
-
-        Resets:
-        - Paddle
-        - Ball
-        - Bricks
-        - Lives
-        - Game-over state
+        Restart the complete game.
         """
 
         self.paddle = Paddle(
@@ -125,11 +121,15 @@ class GameEngine:
 
         self.bricks = self._build_bricks()
 
+        # Task 2
         self.lives = 3
         self.game_over = False
 
+        # Task 4
+        self.score = 0
+        self.combo = 1
+
     def handle_input(self, keys_pressed):
-        # Don't allow normal gameplay during GAME OVER
         if self.game_over:
             return
 
@@ -144,13 +144,11 @@ class GameEngine:
         self.paddle.move(dx, WIDTH)
 
     def handle_keydown(self, key):
-        # Task 2:
-        # Press R to restart after GAME OVER
+        # Task 2
         if self.game_over and key == pygame.K_r:
             self._restart_game()
 
     def update(self):
-        # Stop the game completely during GAME OVER
         if self.game_over:
             return
 
@@ -177,15 +175,27 @@ class GameEngine:
                 brick
             ):
 
-                # Task 3:
-                # Unbreakable bricks are never destroyed.
+                # Unbreakable bricks never lose durability
                 if brick.is_breakable():
 
                     brick.hits_remaining -= 1
 
-                    # Task 1:
-                    # Remove brick when its durability reaches zero.
+                    # Brick has been completely destroyed
                     if brick.hits_remaining <= 0:
+
+                        # Task 4:
+                        # Award points only when the brick
+                        # is actually destroyed.
+                        self.score += (
+                            POINTS_PER_BRICK * self.combo
+                        )
+
+                        # Increase combo for the next
+                        # consecutive brick destruction.
+                        self.combo += 1
+
+                        # Task 1:
+                        # Remove destroyed brick.
                         self.bricks.remove(brick)
 
                 break
@@ -193,16 +203,17 @@ class GameEngine:
         # Ball missed the paddle
         if self.ball.is_below(HEIGHT):
 
-            # Task 2:
-            # Lose one life.
+            # Task 2
             self.lives -= 1
 
+            # Task 4:
+            # Missing the ball resets the combo.
+            self.combo = 1
+
             if self.lives <= 0:
-                # No lives remaining
                 self.game_over = True
 
             else:
-                # Continue with another life
                 self._reset_ball()
 
     def draw(self, surface, font):
@@ -223,7 +234,7 @@ class GameEngine:
             (10, 10)
         )
 
-        # Task 2: display lives
+        # Task 2
         renderer.draw_text(
             surface,
             font,
@@ -231,7 +242,22 @@ class GameEngine:
             (10, 35)
         )
 
-        # Task 2: GAME OVER message
+        # Task 4
+        renderer.draw_text(
+            surface,
+            font,
+            f"Score: {self.score}",
+            (10, 60)
+        )
+
+        renderer.draw_text(
+            surface,
+            font,
+            f"Combo: {self.combo}x",
+            (10, 85)
+        )
+
+        # Task 2
         if self.game_over:
             renderer.draw_banner(
                 surface,
